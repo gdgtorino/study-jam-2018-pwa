@@ -1,0 +1,29 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/gdg-torino-pwa.html",
+  "fragments": [
+    "src/home-view.html",
+    "src/events-view.html",
+    "src/blog-view.html",
+    "src/team-view.html",
+    "src/contacts-view.html",
+    "src/not-found-view.html"
+  ],
+  "sources": [
+    "src/**/*",
+    "images/**/*"
+  ],
+  "extraDependencies": [
+    "manifest.json",
+    "bower_components/webcomponentsjs/*.js"
+  ],
+  "lint": {
+    "rules": ["polymer-2"]
+  },
+  "builds": [
+    {
+      "preset": "es6-unbundled",
+      "basePath": "/"
+    }
+  ]
+}

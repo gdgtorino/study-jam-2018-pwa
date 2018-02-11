@@ -1,0 +1,178 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="/bower_components/grain-masonry/grain-masonry.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="events-view">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            paper-card {
+                width: 400px;
+                margin: 15px;
+                transition: box-shadow .3s ease;
+                --paper-card-header-color: #FFFFFF;
+            }
+
+            paper-card:hover {
+                @apply(--shadow-elevation-8dp);
+            }
+
+            paper-card .event-description {
+                margin-top: 8px;
+                max-height: 150px;
+                overflow: hidden;
+                position: relative;
+            }
+
+            paper-card .event-description::after {
+                content: "";
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                left: 0;
+                top: 80%;
+                background: -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+                background: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%);
+                background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%);
+                filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#ffffff',GradientType=0 );
+            }
+
+            paper-card .event-meta {
+                padding: 4px 0;
+                color: var(--secondary-text-color);
+                fill: var(--secondary-text-color);
+            }
+
+            paper-card .event-name {
+                line-height: 32px;
+                font-size: 24px;
+                margin-bottom: 8px;
+            }
+
+            paper-spinner-lite {
+                margin: 150px 0;
+            }
+
+            a {
+                color: inherit;
+                text-decoration: none;
+            }
+
+            .spinner-layout {
+                text-align: center;
+            }
+
+            @media(max-width: 800px) {
+                .events paper-card {
+                    width: 100%;
+                    margin: 8px 0;
+                }
+
+                .main-width {
+                    padding: 16px;
+                }
+
+                .events a {
+                    width: 100%;
+                }
+
+            }
+        </style>
+
+        <iron-ajax
+                auto
+                url="https://cors-anywhere.herokuapp.com/http://api.meetup.com/2/events?group_urlname=GDG-Torino&status=upcoming,past&text_format=plain&fields=photo_sample"
+                handle-as="json"
+                last-response="{{events}}">
+        </iron-ajax>
+
+        <div class="main-width">
+            <h1>Events</h1>
+            <template is="dom-if" if="[[!_computeEventsLoaded(events)]]">
+                <div class="spinner-layout">
+                    <paper-spinner-lite active></paper-spinner-lite>
+                </div>
+            </template>
+
+            <template is="dom-if" if="[[_computeEventsLoaded(events)]]">
+                <grain-masonry item-selector="a" class="events">
+                    <template is="dom-repeat" items="[[events.results]]" as="event">
+                        <a href="[[event.event_url]]" target="_blank">
+                            <paper-card image="[[event.photo_sample.0.photo_link]]">
+                                <div class="card-content">
+                                    <div class="vertical layout">
+                                        <div class="event-name">[[event.name]]</div>
+                                        <template is="dom-if" if="[[event.venue.name]]">
+                                            <div class="event-meta">
+                                                <iron-icon icon="device:access-time"></iron-icon>
+                                                <span class="event-location">[[event.venue.name]]</span>
+                                            </div>
+                                        </template>
+                                        <template is="dom-if" if="[[event.time]]">
+                                            <div class="event-meta">
+                                                <iron-icon icon="communication:location-on"></iron-icon>
+                                                <span class="event-location">[[_formatTime(event.time)]]</span>
+                                            </div>
+                                        </template>
+                                        <div class="event-description">[[event.description]]</div>
+                                    </div>
+
+                                </div>
+                            </paper-card>
+                        </a>
+                    </template>
+                </grain-masonry>
+            </template>
+        </div>
+    </template>
+
+    <script>
+        class EventsView extends Polymer.Element {
+            static get is() {
+                return 'events-view';
+            }
+
+            static get properties() {
+                return {
+                    events: {
+                        type: Object,
+                        value: null
+                    }
+                };
+            }
+
+            _computeEventsLoaded(events) {
+                return events !== null;
+            }
+
+            _resp() {
+                console.log(this.events);
+            }
+
+            _formatTime(time) {
+                return new Date(time).toLocaleString();
+            }
+        }
+
+        window.customElements.define(EventsView.is, EventsView);
+    </script>
+</dom-module>
